@@ -1,0 +1,1233 @@
+html
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>텍스트 문서 보기</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ccc;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>keanu_2</h1>
+    <pre id="textContent">
+[3번] winequality
+
+와인의 성분 데이터를 이용하여 와인 등급을 분류하는 AI 문제입니다.
+
+AI코딩 단계에 따라 주어지는 문제를 읽고 답안을 작성하세요.
+
+데이터 : 분류(카테고리)
+모델 : RandomForest(머신러닝 모델 비교 분석 추가), DeepLearning
+주요 전처리 : 분석 Column 추가, 정규화(normalization), label 전처리(카테고리 → 수치화)
+주요 학습 내용 : 산점도, 분류 모델 생성(분류방법, input, output 처리, 손실함수 등), 머신러닝 모델 비교학습(리스트 활용)
+winequality_red.csv / 에이드 판매 데이터 컬럼 설명
+
+fixed acidity : 고정산 농도
+volatile acidity : 휘발산 농도
+citric acid : 구연산 농도
+residual sugar : 잔류 당분 농도
+chlorides : 염화물 농도
+free sulfur dioxide : 유리 아황산 농도
+total sulfur dioxide : 총 아황산 노도
+density : 밀도
+pH : pH, 수소이온농도지수
+sulphates : 황산염 농도
+alcohol : 알코올 도수
+quality : 와인 등급 0 ~ 10, integer
+현재 데이터는 3,4,5,6,7,8 만 있다.
+import pandas as pd
+
+import matplotlib.pyplot as plt
+
+ 
+
+Q3.winequality_red.csv를 판다스 데이터 프레임으로 불러와서 wine에 선언하는 코드를 작성하고 실행하시기 바랍니다.
+
+해당 csv는 string 형식으로 저장되어 있으며 ';' 기호로 항목을 분리해줘야 합니다.
+wine = pd.read_csv(aidu_framework.config.data_dir + '/winequality_red.csv', encoding='cp949',sep=';')
+
+wine['quality'].value_counts()
+
+Q4. 데이터 프레임 wine의 처음 5개 행을 조회하는 코드를 작성하고 데이터가 올바르게 불러와졌는지 확인하시기 바랍니다.
+
+wine.head(5)
+
+Q5. 데이터 프레임 wine의 alcohol 컬럼을 히스토그램으로 시각화 하시기 바랍니다.¶
+
+시각화를 위해 데이터를 10개 구간으로 나눈다.
+wine['alcohol'].plot(kind='hist', bins=10)
+
+plt.show()
+
+Q6. 다음 조건에 맞추어 데이터 프레임 wine에 새로운 컬럼 rat_ca를 제작하시기 바랍니다.
+
+rat_ca 는 구연산 농도(citric acid를 알코올 도수(alcohol)로 나눈 값으로 정의한다.
+wine['rat_ca'] = wine['citric acid'] / wine['alcohol']
+
+wine
+
+Q7. 데이터 프레임 wine의 컬럼 rat_ac를 x축, quality를 y축으로 하는 산점도를 시각화 하시기 바랍니다.¶
+
+wine.plot(kind='scatter', x='rat_ca', y='quality')
+
+plt.show()
+
+Q8. 다음 조건에 맞추어 데이터 프레임 wine에 새로운 컬럼 rat_r2a를 제작하시기 바랍니다
+
+rat_r2a 는 잔류 당분 농도(residual sugar)의 제곱을 알코올 도수(alcohol)로 나눈 값으로 정의한다.
+wine['rat_r2a'] = wine['residual sugar']**2 / wine['alcohol']
+
+wine
+
+Q9. 데이터 프레임 wine의 컬럼 rat_r2a를 x축으로 quality를 y축으로 하는 산점도를 시각화 하시기 바랍니다.
+
+import numpy as np
+
+plt.scatter(x=wine['rat_r2a'], y=wine['quality'])
+
+plt.show()
+
+Q10. 다음 조건에 맞추어 데이터 프레임 wine에 새로운 컬럼 rat_cta를 제작하시기 바랍니다.
+
+rat_cta 는 구연산 농도를 (구연산+고정산+휘발산)농도로 나눈 값으로 정의한다.
+구연산 : citric acid, 휘발산 : volatile acidity, 고정산 : fixed activity
+wine['rat_cta'] = wine['citric acid'] / wine[['citric acid', 'volatile acidity', 'fixed acidity']].sum(axis=1)
+
+wine
+
+Q11. 데이터 프레임 wine의 컬럼 rat_cta를 x축으로 컬럼 quality를 y축으로 하는 산점도를 시각화 하시기 바랍니다.
+
+plot에 grid(격자 표시)를 추가하시오.
+wine.plot(kind='scatter', x='rat_cta', y='quality')
+
+plt.grid()
+
+plt.show()
+
+Q12. 데이터 프레임 wine의 컬럼 density와 pH를 표준화(standardization) 하시기 바랍니다¶
+
+x = wine[['density', 'pH']]
+
+wine[['density', 'pH']]= ( x - x.mean(axis=0) ) / x.std(axis=0)
+
+ 
+
+#답안 2
+
+from sklearn.preprocessing import StandardScaler
+
+scaler=StandardScaler()
+
+ 
+
+wine[['density', 'pH']]=scaler.fit_transform(wine[['density', 'pH']])
+
+Q13. 데이터를 트레이닝셋 / 테스트셋으로 분할하시기 바랍니다.
+
+y는 wine데이터 프레임의 quality컬럼이다. x는 그 나머지 컬럼들이다.
+train : test = 9 : 1
+y의 클래스가 골고루 분할되도록 stratify하게 분할한다.
+변수명 규칙은 다음과 같다.
+x_train, y_train
+x_test, y_test
+random state, seed 등은 2021로 설정한다.
+x = wine.drop(['quality'], axis=1)
+
+y = wine['quality']
+
+from sklearn.model_selection import train_test_split
+
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.1, random_state=2021, stratify = y)
+
+Q14. 트레이닝 데이터를 트레이닝셋 / 벨리데이션셋으로 분할하시기 바랍니다.¶
+
+x_train, y_train을 이용한다.
+train : validation = 8 : 1
+y_train의 클래스가 골고루 분할되도록 stratify하게 분할한다.
+변수명 규칙은 다음과 같다.
+x_train, y_train
+x_valid, y_valid
+random state, seed 등은 2021로 설정한다.
+from sklearn.model_selection import train_test_split
+
+x_train, x_valid, y_train, y_valid = train_test_split(x_train, y_train, test_size=1/(1+8), random_state=2021, stratify = y_train)
+
+x_train.shape, x_valid.shape, x_test.shape
+
+Q15. RandomForest 모델들을 학습시키시기 바랍니다.
+
+RandomForestClassifier 하이퍼파라미터 설정 : n_estimators=나무의 개수, max_depth=13(각 Tree의 max depth),min_samples_leaf=5(한개의 node에 최소의 데이터 개수, 5개면 tree depth를 늘리지 않음) random_state=30
+와인의 퀄리티를 '분류'모델링 한다.
+트레이닝 셋 (x_train, y_train)을 이용하여 학습시킨다.
+나무의 개수를 1에서 50까지 늘려가며 학습한다.
+학습시킨 랜덤포레스트들은 리스트를 만들어 forests 변수에 담아둔다.
+seed나 random_state는 2021로 고정한다.
+from sklearn.ensemble import RandomForestClassifier
+
+from sklearn.metrics import accuracy_score
+
+ 
+
+forests = []
+
+for n_trees in range(1, 51) :
+
+    forest = RandomForestClassifier(n_estimators=n_trees, max_depth=13, min_samples_leaf=5, random_state=2021)
+
+    forest.fit(x_train, y_train)
+
+    forests.append(forest)
+
+Q16. RandomForest 모델들의 성능을 리스트에 담아 accs에 선언하시기 바랍니다.
+
+위에 저장한 randomforest 값들을 불러온다.(forest list를 활용한다. forests[i] 형태)
+for 문 함수를 사용하여, 각 모델에 대한 valid set에 대한 acc를 확인한다.(score 함수 활용)
+벨리데이션 셋 위에서 성능을 평가한다.
+append를 통해 accs list의 값에 계속 해당 성능 값을 추가한다.
+accs = []
+
+for i in range(50) :
+
+    forest = forests[i]
+
+    acc = forest.score(x_valid, y_valid)
+
+    accs.append(acc)
+
+Q17. RandomForest의 Tree 개수에 따른 accuracy를 시각화 하시기 바랍니다.
+
+위의 Q17에서 제작한 리스트 accs를 이용한다.
+line plot을 이용하여 각 모델 별 accuracy를 출력한다.
+동일 성능의 gamma가 여러개라면 가장 작은걸 택한다.
+plt.figure(figsize=(10, 6))
+
+plt.plot([0.1+i for i in range(50)], accs)
+
+plt.grid()
+
+plt.show()
+
+다음 문항을 풀기 전에 아래 코드를 실행하세요.
+
+import tensorflow as tf
+
+from tensorflow import keras
+
+from tensorflow.keras.layers import Input, Dense, BatchNormalization
+
+from tensorflow.keras.models import Sequential, Model
+
+from tensorflow.keras.callbacks import EarlyStopping
+
+Q17. 아래 조건에 맞추어 뉴럴네트워크 모델을 학습시키시기 바랍니다.
+
+Tensorflow framework를 사용한다.
+히든레이어는 아래와 같은 규칙에 맞추어 구성합니다.
+2개의 fully connected layer를 사용할 것, 노드는 인풋레이어 노드의 2이상으로 한다.
+Early stopping을 이용하여, validation loss가 50번 이상 개선되지 않으면 학습을 중단 시키고, 가장 성능이 좋았을 때의 가중치를 복구한다.
+학습과정의 로그(loss, accuracy)를 history에 선언하여 남긴다.
+y를 별도로 원핫인코딩 하지 않고 분류모델을 학습시킬 수 있도록 한다.
+데이터에 없는 클래스까지 고려하여, 아웃풋레이어의 노드를 10개로 지정한다.
+epochs는 2000번을 지정한다.
+eras.backend.clear_session()
+
+ 
+
+model = Sequential()
+
+model.add(Dense(36, activation='relu', input_shape=(14,)))
+
+model.add(BatchNormalization())
+
+model.add(Dense(36, activation='relu'))
+
+model.add(BatchNormalization())
+
+model.add(Dense(10, activation='softmax'))
+
+ 
+
+model.compile(optimizer='adam',
+
+              loss='sparse_categorical_crossentropy',
+
+              metrics=['accuracy'])
+
+ 
+
+es = EarlyStopping(monitor='val_loss', min_delta=0, patience=50, verbose=1, restore_best_weights=True)
+
+history = model.fit(x_train, y_train, epochs=2000, batch_size=32,
+
+                    verbose=1,validation_data=(x_valid, y_valid),callbacks=[es])
+
+Q20. 다음 조건에 맞추어 뉴럴네트워크의 학습 로그를 시각화 하시오.
+
+필요한 라이브러리가 있다면 따로 불러온다.
+epochs에 따른 accuracy의 변화를 시각화 한다.
+train accuracy와 validation accuracy를 전부 시각화하고, 구별가능해야 한다.
+그래프의 타이틀은 'Accuracy'로 표시한다.
+x축에는 'epochs'라고 표시하고 y축에는 'accuracy'라고 표시한다.
+import matplotlib.pyplot as plt
+
+ 
+
+plt.plot(history.history['accuracy'])
+
+plt.plot(history.history['val_accuracy'])
+
+plt.title('Accuracy')
+
+plt.xlabel('epochs')
+
+plt.ylabel('accuracy')
+
+plt.legend(['train_acc', 'val_acc'])
+
+plt.show()
+
+ 
+
+[4 ] wine recognition
+
+와인의 성분 데이터를 이용하여 와인 종류를 예측하는 AI 문제입니다.
+
+AI코딩 단계에 따라 주어지는 문제를 읽고 답안을 작성하세요.
+
+(wine recognition 데이터 : sklearn 내장 연습용 데이터셋 사용)
+
+데이터 : 분류(카테고리)
+모델 : RandomForest(머신러닝 성능 비교 분석), DeepLearning
+주요 전처리 : 분석 Column 추가, 정규화(normalization), label 전처리(카테고리 → 수치화)
+주요 학습 내용 : 산점도, 분류 모델 생성(분류방법, input, output 처리, 손실함수 등), 머신러닝 모델 비교학습(리스트 활용)
+wine recognition 데이터 컬럼 설명 (sklearn 내장 연습용 데이터셋)
+
+Alcohol : 알콜도수
+Malic Acid : 사과산
+Ash : 회분
+Alcalinity of Ash : 회분의 알칼리도
+Magnesium : 마그네슘
+Total phenols : 총 폴리페놀
+Flavanoids : 플로보노이드 폴페놀
+Nonflavanoid phenols : 비 플로보노이드 폴리페놀
+Proanthocyanins : 프로안토시아닌
+Color intensity : 색의 강도
+Hue : 색상
+OD280/OD315 of diluted wines : 희석와인의 OD280/OD315 비율
+Proline : 프롤린
+class : 라벨(y변수_ 데이터로 각각 다른 종류의 와인을 가르킴
+0, 1, 2 : 서로 다른 종류의 와인을 가리킴.
+import numpy as np
+
+import matplotlib.pyplot as plt
+
+Q3. 인풋으로 사용할 데이터( x )의 row 수와 column 수를 확인하시기 바랍니다.
+
+n_r, n_c = x.shape
+
+print(f"로우 수 : {n_r}")
+
+print(f"컬럼 수 : {n_c}")
+
+x.shape, y.shape
+
+Q4. 데이터를 트레이닝셋 / Valid셋으로 분할하시기 바랍니다.
+
+x, y를 이용한다.
+train : test = 8 : 2
+y의 클래스가 골고루 분할되도록 stratify하게 분할한다.
+변수명 규칙은 다음과 같다.
+x_train, y_train
+x_valid, y_valid
+random state, seed 등은 2021로 설정한다.
+from sklearn.model_selection import train_test_split
+
+x_train, x_valid, y_train, y_valid = train_test_split(x, y, test_size=0.2, random_state=2021, stratify = y)
+
+Q5. Decision Tree 모델들을 학습시키시기 바랍니다.
+
+트레이닝 셋 (x_train, y_train)을 이용하여 학습시킨다.
+트리의 leaf에는 최소 10개 샘플이 있어야 한다.
+max_depth를 1 부터 15까지 늘려가며 총 15개의 트리를 학습시킨다.
+학습시킨 트리들은 리스트를 만들어 trees 변수에 담아둔다.
+seed나 random_state는 2021로 고정한다.
+from sklearn.tree import DecisionTreeClassifier
+
+ 
+
+trees = []
+
+for depth in range(1, 16) :
+
+    tree = DecisionTreeClassifier(max_depth = depth, min_samples_leaf = 10, random_state=2021)
+
+    tree.fit(x_train, y_train)
+
+    trees.append(tree)
+
+Q6. Decision Tree 모델들의 성능을 리스트에 담아 accs에 선언하시기 바랍니다.
+
+max_depth가 1인 트리부터 순서대로 평가하여 리스트에 담는다.
+성능 평가는 5번에서 분리한 벨리데이션 셋을 이용한다.
+성능지표로는 accuracy를 사용한다.
+accs = []
+
+for depth in range(1, 16) :
+
+    idx = depth - 1
+
+    tree = trees[idx]
+
+    acc = tree..score(x_valid, y_valid)
+
+    accs.append(acc)
+
+Q7. Decision Tree의 max depth에 따른 accuracy를 시각화 하고, 가장 성능이 좋은 depth를 선택하시기 바랍니
+
+위의 Q7에서 제작한 리스트 accs를 이용한다.
+line plot 이나 scatter plot을 이용한다.
+동일 성능의 depth가 여러개라면, 가장 작은 depth를 선택한다.
+plt.figure(figsize=(10, 6))
+
+plt.plot(range(1,16), accs)
+
+plt.grid()
+
+plt.show()
+
+print('depth = 3 선택')
+
+Q8. Decision Tree 선택된 depth에서 모델들을 학습시키시기 바랍니다
+
+트레이닝 셋 (x_train, y_train)을 이용하여 학습시킨다.
+트리의 leaf에 담길 최소 샘플 수를 5개에서 15개까지 늘려가며 트리를 학습시킨다.(min_samples_leaf 변수를 변화시키면서 학습한다.)
+max_depth는 선택한 depth로 고정한다.
+학습시킨 트리들은 리스트를 만들어 trees 변수에 담아둔다.
+seed나 random_state는 2021로 고정한다.
+from sklearn.tree import DecisionTreeClassifier
+
+ 
+
+trees = []
+
+for min_sample in range(5, 16) :
+
+    tree = DecisionTreeClassifier(max_depth = 3, min_samples_leaf = min_sample, random_state=2021)
+
+    tree.fit(x_train, y_train)
+
+    trees.append(tree)
+
+Q9. Q8에서 학습시킨 Decision Tree 모델들의 성능을 리스트에 담아 accs에 선언하시기 바랍니다.
+
+leaf에 담길 최소 샘플수가 1인 트리 부터 순서대로 평가하여 리스트에 담는다.
+벨리데이션 셋 위에서 성능을 평가한다.
+성능지표로는 accuracy를 사용한다.
+accs = []
+
+for min_sample in range(1, 12) :
+
+    idx = min_sample - 1
+
+    tree = trees[idx]
+
+    acc = tree..score(x_valid, y_valid)
+
+    accs.append(acc)
+
+Q10. Decision Tree의 leaf에 담길 최소 샘플수에 따른 accuracy를 시각화 하고, 가장 성능이 좋은 최소 샘플수를 선택하시기 바랍니다.
+
+위의 Q10에서 제작한 리스트 accs를 이용한다.
+line plot을 이용해서 시각화 한다.
+동일 성능의 최소 샘플수가 여러개라면, 가장 최소값을 선택한다
+plt.figure(figsize=(10, 6))
+
+plt.plot(range(1,12), accs)
+
+plt.grid()
+
+plt.show()
+
+print('최소 샘플 수 = 5 선택')
+
+best_tree = trees[0]
+
+Q11. Q10번에서 시각화한 트리의 relative feature importance를 시각화 하시기 바랍니다.
+
+수평 bar plot을 이용한다.
+각 변수의 이름은 col_names를 활용한다.
+plt.figure(figsize=(10, 6))
+
+plt.barh(y=col_names, width=best_tree.feature_importances_)
+
+plt.grid()
+
+plt.show()
+
+Q12. Q11번에서 시각화한 트리의 accuracy를 출력하시기 바랍니다.
+
+테스트셋을 이용한다.
+print(f"테스트셋 위에서의 accuracy : {best_tree.score(x_valid, y_valid)*100:.2f}%")
+
+ 
+
+다음 문항을 풀기 전에 아래 코드를 실행하시기 바랍니다.
+
+import tensorflow as tf
+
+from tensorflow import keras
+
+from tensorflow.keras.layers import Input, Dense, Dropout
+
+from tensorflow.keras.models import Sequential, Model
+
+from tensorflow.keras.callbacks import EarlyStopping
+
+Q13. 아래 조건에 맞추어 뉴럴네트워크 모델을 학습시키시기 바랍니다.
+
+Tensorflow framework를 사용한다.
+히든레이어는 아래와 같은 규칙에 맞추어 구성합니다.
+2개 이상의 fully connected layer를 사용할 것
+Drop out 테크닉을 적절히 활용한다.
+Early stopping을 이용하여, validation loss가 10번 이상 개선되지 않으면 학습을 중단 시키고, 가장 성능이 좋았을 때의 가중치를 복구한다.
+학습과정의 로그(loss, accuracy)를 history에 선언하여 남긴다.
+y를 별도로 원핫인코딩 하지 않고 분류모델을 학습시킬 수 있도록 한다.(loss function을 sparse_categorical_crossentropy 로 사용한다)
+epochs는 2000번을 지정한다.
+keras.backend.clear_session()
+
+ 
+
+model = Sequential()
+
+model.add(Dense(32, activation='swish', input_shape=(13,)))
+
+model.add(Dropout(0.4))
+
+model.add(Dense(32, activation='swish'))
+
+model.add(Dropout(0.4))
+
+model.add(Dense(3, activation='softmax'))
+
+ 
+
+model.compile(optimizer='adam',
+
+              loss='sparse_categorical_crossentropy',
+
+              metrics=['accuracy'])
+
+ 
+
+es = EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=1, restore_best_weights=True)
+
+history = model.fit(x_train, y_train, epochs=2000, batch_size=32,
+
+                    verbose=1,validation_data=(x_valid, y_valid),callbacks=[es])
+
+ 
+
+# 다른 비교--참조
+
+keras.backend.clear_session()
+
+ 
+
+model = Sequential()
+
+model.add(Dense(32, activation='relu', input_shape=(13,)))
+
+model.add(Dropout(0.4))
+
+model.add(Dense(32, activation='relu'))
+
+model.add(Dropout(0.4))
+
+model.add(Dense(3, activation='softmax'))
+
+ 
+
+model.compile(optimizer='adam',
+
+              loss='sparse_categorical_crossentropy',
+
+              metrics=['accuracy'])
+
+ 
+
+es = EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=1, restore_best_weights=True)
+
+history = model.fit(x_train, y_train, epochs=2000, batch_size=32,
+
+                    verbose=1,validation_data=(x_valid, y_valid),callbacks=[es])
+
+ 
+
+Q14. 다음 조건에 맞추어 뉴럴네트워크의 학습 로그를 시각화 하시기 바랍니다.
+
+필요한 라이브러리가 있다면 따로 불러온다.
+epochs에 따른 loss의 변화를 시각화 한다.
+train loss와 validation loss를 전부 시각화하고, 구별가능해야 한다.
+그래프의 타이틀은 'Loss'로 표시한다.
+x축에는 'epochs'라고 표시하고 y축에는 'Loss'라고 표시한다.
+위에서 학습한 머신러닝 모델과 성능을 비교해보시오.
+import matplotlib.pyplot as plt
+
+ 
+
+plt.plot(history.history['loss'])
+
+plt.plot(history.history['val_loss'])
+
+plt.title('Loss')
+
+plt.xlabel('epochs')
+
+plt.ylabel('loss')
+
+plt.legend(['train_loss', 'val_loss'])
+
+plt.show()
+
+ 
+
+[심화1]boston house prices
+
+Boston의 지역특성과 가격 데이터를 이용하여 , Boston 집값을 예측하는 AI문제입니다.
+
+AI코딩 단계에 따라 주어지는 문제를 읽고 답안을 작성하세요.
+
+(boston house prices 데이터 : sklearn 내장 연습용 데이터셋 사용)
+
+데이터 : 회귀(수치)
+모델 : 다중 회귀 분석 심화(선형, lidge, Lasso, elastic,), DeepLearning
+주요 전처리 : 분석 Column 추가, 표준화(standardization), min-max Scaling
+주요 학습 내용 : 다중 회귀 분석 심화 내용, 회귀 예측 모델 생성(input, output 처리, 손실함수 등)
+boston house prices 데이터 컬럼 설명 (sklearn 내장 연습용 데이터셋)
+
+CRIM : 자치시(town)별 1인당 범죄율
+ZN : 25,000 평방피트를 초과하는 거주지역의 비율
+INDUS : 비소매상업지역이 점유하고 있는 토지의 비율
+CHAS : 찰스강 근처는 1, 그렇지 않으면 0
+NOX : 10ppm당 일산화질소 농도
+RM : 주택 1가구당 평균 방의 개수
+AGE : 1940년 이전에 건축된 소유주택의 비율
+DIS : 5개의 보스턴 직업센터까지의 접근성 지수
+RAD : 방사형 도로까지의 접근성 지수
+TAX : 10,000달러 당 재산 세율
+PTRATIO : 자치시(town)별 학생/교사 비율
+B : 1000(Bk-0.63)^2, Bk는 자치시별 흑인의 비율
+LSTAT : 모집단의 하위계층 비율
+MEDV : 집주인이 실제 거주하는 집들의 주택가격 중앙값 (단위 $1,000)
+import pandas as pd
+
+import numpy as np
+
+Q3. 인풋데이터(x)와 인풋데이터 컬럼명(col_names)를 이용하여 인풋데이터의 dataframe을 제작하시기 바랍니다.
+
+데이터 프레임의 변수 명은 bhp 로 한다.
+bhp = pd.DataFrame(x, columns=col_names)
+
+Q4. 데이터 프레임 bhp에 새로운 컬럼 MEDV를 제작하시기 바랍니다.
+
+컬럼의 값은 y를 사용한다. (주택 가격)
+bhp['MEDV'] = y
+
+Q5. 데이터를 트레이닝셋 / 테스트셋으로 분할하시기 바랍니다.
+
+x와 y를 이용해도 좋지만, 데이터 프레임 bhp를 이용하여 분할하면 이후 코드가 편리해진다.
+train : test = 8.5 : 1.5
+컬럼 CHAS 를 이용하여 stratify 하게 분할한다.
+변수명 규칙은 다음과 같다.
+x_train, y_train
+x_test, y_test
+random state, seed 등은 2021로 설정한다.
+from sklearn.model_selection import train_test_split
+
+ 
+
+x_train, x_test, y_train, y_test = train_test_split(bhp.drop('MEDV', axis=1), bhp['MEDV'], test_size=0.15, random_state=2021, stratify = bhp['CHAS'])
+
+Q6. 트레이닝셋을 트레이닝셋 / 벨리데이션셋으로 분할하시기 바랍니다.
+
+x_train과 y_train을 이용한다.
+train : valid = 7 : 1.5
+x_train의 컬럼 CHAS 를 이용하여 stratify 하게 분할한다.
+변수명 규칙은 다음과 같다.
+x_train, y_train
+x_valid, y_valid
+random state, seed 등은 2021로 설정한다.
+from sklearn.model_selection import train_test_split
+
+ 
+
+x_train, x_valid, y_train, y_valid = train_test_split(x_train, y_train, test_size=15/(70+15),
+
+                                                      random_state=2021, stratify = x_train['CHAS'])
+
+x_train.shape, x_valid.shape, x_test.shape
+
+Q7. 데이터의 NOX와 RM은 민맥스(min-max) 스케일링 하시기 바랍니다.
+
+모든 스케일링 규칙은 트레이닝 셋을 이용하여 정한다.
+트레이닝셋, 벨리데이션셋, 테스트셋 전부 스케일링 한다.
+from sklearn.preprocessing import MinMaxScaler
+
+ 
+
+mm_scaler = MinMaxScaler()
+
+x_train[['NOX', 'RM']] = mm_scaler.fit_transform(x_train[['NOX', 'RM']] )
+
+x_valid[['NOX', 'RM']] = mm_scaler.transform(x_valid[['NOX', 'RM']] )
+
+x_test[['NOX', 'RM']] = mm_scaler.transform(x_test[['NOX', 'RM']] )
+
+Q8. 데이터의 RAD와 B는 표준화(standardization) 스케일링 하시기 바랍니다.
+
+모든 스케일링 규칙은 트레이닝 셋을 이용하여 정한다.
+트레이닝셋, 벨리데이션셋, 테스트셋 전부 스케일링 한다.
+from sklearn.preprocessing import StandardScaler
+
+ 
+
+st_scaler = StandardScaler()
+
+x_train[['RAD', 'B']] = st_scaler.fit_transform(x_train[['RAD', 'B']] )
+
+x_valid[['RAD', 'B']] = st_scaler.transform(x_valid[['RAD', 'B']] )
+
+x_test[['RAD', 'B']] = st_scaler.transform(x_test[['RAD', 'B']] )
+
+Q9. 트레이닝 셋을 이용하여 선형회귀 모델을 학습시키시기 바랍니다.
+
+linear regression의 normal equation으로 coefficient들을 추정한다.
+학습된 모델은 lr 에 선언해둔다.
+from sklearn.linear_model import LinearRegression
+
+lr = LinearRegression().fit(x_train, y_train)
+
+Q10. 트레이닝 셋을 이용하여 ridge regression 모델을 학습시키시기 바랍니다.
+
+regularization term의 penalty intensity 는 5로 설정한다.
+학습된 모델은 ridge 에 선언해둔다.
+from sklearn.linear_model import Ridge
+
+ridge = Ridge(5).fit(x_train, y_train)
+
+Q11. 트레이닝 셋을 이용하여 lasso regression 모델을 학습시키시기 바랍니다.
+
+regularization term의 penalty intensity 는 1로 설정한다.
+학습된 모델은 lasso 에 선언해둔다.
+from sklearn.linear_model import Lasso
+
+lasso = Lasso(1).fit(x_train, y_train)
+
+Q12. 트레이닝 셋을 이용하여 elastic net regression 모델을 학습시키시기 바랍니다.
+
+regularization term의 penalty intensity는 아래와 같이 설정한다
+l1 penalty intensity : 0.5
+l2 penalty intensity : 3
+학습된 모델은 elastic 에 선언해둔다.
+from sklearn.linear_model import ElasticNet
+
+elastic = ElasticNet(alpha=3.5, l1_ratio=(0.5/3.5)).fit(x_train, y_train)
+
+Q13. 벨리데이션 셋을 이용하여 학습된 네 모델의 성능을 출력하시기 바랍니다.
+
+평가를 위한 손실함수는 rmse를 이용한다.
+from sklearn.metrics import mean_squared_error as MSE
+
+model_names = ['선형회귀', 'Ridge', 'Lasso', 'Elastic Net']
+
+models = [lr, ridge, lasso, elastic]
+
+for i in range(4) :
+
+    y_pred = models[i].predict(x_valid)
+
+    print(f"RMSE of {model_names[i]} : {MSE(y_valid, y_pred)**.5:.2f} * $1000")
+
+Q14. 테스트 셋을 이용하여 학습된 네 모델의 성능을 출력하시기 바랍니다
+
+손실함수는 mean absolute error를 이용한다.
+from sklearn.metrics import mean_absolute_error as MAE
+
+ 
+
+model_names = ['선형회귀', 'Ridge', 'Lasso', 'Elastic Net']
+
+models = [lr, ridge, lasso, elastic]
+
+ 
+
+for i in range(4) :
+
+    y_pred = models[i].predict(x_test)
+
+    print(f"RMSE of {model_names[i]} : {MAE(y_test, y_pred):.2f} * $1000")
+
+Q15. 테스트 셋에서 CHAS가 1일 때, 학습된 네 모델의 성능을 출력하시기 바랍니다.
+
+손실함수는 mean absolute error를 이용한다.
+from sklearn.metrics import mean_absolute_error as MAE
+
+ 
+
+model_names = ['선형회귀', 'Ridge', 'Lasso', 'Elastic Net']
+
+models = [lr, ridge, lasso, elastic]
+
+ 
+
+cond_cha =  (x_test['CHAS'] == 1)
+
+x_test_cha = x_test[cond_cha]
+
+y_test_cha = y_test[cond_cha]
+
+ 
+
+for i in range(4) :
+
+    y_pred_cha = models[i].predict(x_test_cha)
+
+    print(f"RMSE of {model_names[i]} : {MAE(y_test_cha, y_pred_cha):.2f} * $1000")
+
+다음 문항을 풀기 전에 아래 코드를 실행하시기 바랍니다.
+
+import tensorflow as tf
+
+from tensorflow import keras
+
+from tensorflow.keras.layers import Input, Dense, BatchNormalization
+
+from tensorflow.keras.models import Sequential, Model
+
+from tensorflow.keras.callbacks import ModelCheckpoint
+
+Q16. 아래 조건에 맞추어 뉴럴네트워크 모델을 학습시키시기 바랍니다
+
+Tensorflow framework를 사용한다.
+히든레이어는 아래와 같은 규칙에 맞추어 구성합니다.
+2개 이상의 fully connected layer를 사용할 것
+FC layer뒤에는 batch normalization을 진행한다.
+ModelCheckpoint 콜백으로 validation performance가 좋은 모델을 best_model.h5 파일로 저장한다.
+학습과정의 로그를 history에 선언하여 남긴다.
+epochs는 200번을 진행한다.
+keras.backend.clear_session()
+
+ 
+
+model = Sequential()
+
+model.add(Dense(32, activation='swish', input_shape=(13,)))
+
+model.add(BatchNormalization())
+
+model.add(Dense(32, activation='swish'))
+
+model.add(BatchNormalization())
+
+model.add(Dense(1))
+
+model.compile(optimizer='adam',
+
+              loss='mse'  )
+
+mc = ModelCheckpoint('best_model.h5', monitor='val_loss', mode='min', save_best_only=True)
+
+history = model.fit(x_train, y_train, epochs=200, batch_size=32,
+
+                    verbose=1,validation_data=(x_valid, y_valid),callbacks=[mc])
+
+Q17. 다음 조건에 맞추어 뉴럴네트워크의 학습 로그를 시각화 하시기 바랍니다.
+
+필요한 라이브러리가 있다면 따로 불러온다.
+epochs에 따른 loss의 변화를 시각화 한다.
+train loss와 validation loss를 전부 시각화하고, 구별가능해야 한다.
+그래프의 타이틀은 'Loss'로 표시한다.
+x축에는 'epochs'라고 표시하고 y축에는 'MSE'라고 표시한다.
+import matplotlib.pyplot as plt
+
+ 
+
+plt.plot(history.history['loss'])
+
+plt.plot(history.history['val_loss'])
+
+plt.title('Loss')
+
+plt.xlabel('epochs')
+
+plt.ylabel('MSE')
+
+plt.legend(['loss', 'val_loss'])
+
+plt.show()
+
+ 
+
+[심화2 암 진단]
+
+Breast cancer wisconsin : sklearn 내장 연습용 데이터셋 사용
+
+데이터 : 분류(카테고리)
+모델 : KNN(머신러닝 모델 비교 분석), DeepLearning
+주요 전처리 : 분석 Column 추가, 표준화(standardization)
+주요 학습 내용 : 이중 분류 모델 생성(binary 분류, input, output 처리, 손실함수 등), 머신러닝 모델 비교학습(리스트 활용)
+아래 측정값들을, 평균(mean), 표준오차(error), 제일 큰 값 3개의 평균(worst)으로 나타낸다. 예를 들어 radius는 mean radius, radius error, worst radius 3개 컬럼으로 나타난다.
+
+radius : 암세포의 반지름
+texture : 질감
+perimeter : 둘레
+area : 면적
+smoothness : 매끄러움
+concavity : 오목함
+concave points : 오목한 곳의 수
+symmetry : 대칭성
+fractal dimension : 프렉탈 차원
+class : 라벨(y변수) 데이터로 세포의 양성/악성 여부를 binary로 표기한 데이터
+0 : malignant : 악성
+1 : benign : 양성
+ 
+
+다음 문항을 풀기 전에 아래 코드를 실행하시오.
+
+from sklearn.datasets import load_breast_cancer
+
+cancer = load_breast_cancer()
+
+x = cancer.data # 인풋으로 사용할 데이터
+
+y = cancer.target # 아웃풋, target으로 사용할 데이터
+
+col_names = cancer.feature_names # 인풋으로 사용할 데이터의 컬럼별 이름들
+
+target_names = cancer.target_names # 아웃풋, target으로 사용할 데이터의 클래스 이름
+
+ 
+
+import pandas as pd
+
+import matplotlib.pyplot as plt
+
+Q3. 인풋데이터(x)와 인풋데이터 컬럼명(col_names)를 이용하여 인풋데이터의 dataframe을 제작하시기 바랍니다
+
+데이터 프레임의 변수 명은 bcc 로 한다.
+bcc = pd.DataFrame(x, columns=col_names)
+
+Q4. 데이터를 트레이닝셋 / 테스트셋으로 분할하시기 바랍니다
+
+bcc와, y를 이용한다. ( x를 사용해도 좋지만, 이후 문제를 위해 bcc를 이용한다.)
+train : test = 8.5 : 1.5
+y의 클래스가 골고루 분할되도록 stratify하게 분할한다.
+변수명 규칙은 다음과 같다.
+x_train, y_train
+x_test, y_test
+random state, seed 등은 2021로 설정한다
+from sklearn.model_selection import train_test_split
+
+x_train, x_test, y_train, y_test = train_test_split(bcc, y, test_size=0.15, random_state=2021, stratify = y)
+
+Q5. 트레이닝 데이터를 트레이닝셋 / 벨리데이션셋으로 분할하시기 바랍니다
+
+x_train, y_train을 이용한다.
+train : validation = 7 : 3
+y_train의 클래스가 골고루 분할되도록 stratify하게 분할한다.
+변수명 규칙은 다음과 같다.
+x_train, y_train
+y_valid, y_valid
+random state, seed 등은 2021로 설정한다.
+from sklearn.model_selection import train_test_split
+
+x_train, x_valid, y_train, y_valid = train_test_split(x_train, y_train, test_size=0.3, random_state=2021, stratify = y_train)
+
+Q6. x_train, x_valid, x_test의 인덱스를 초기화 하시기 바랍니다
+
+현재 x들은 전부 dataframe이고, 원본 bcc의 인덱스를 그대로 가지고 있다.
+맨 첫번째 row부터 순서대로 인덱스를 갖도록 한다
+인덱스는 정수 인덱스이며, 0부터 시작한다.
+x_train.reset_index(inplace=True, drop=True)
+
+x_valid.reset_index(inplace=True, drop=True)
+
+x_test.reset_index(inplace=True, drop=True)
+
+Q7. x_train, x_valid, x_test의 모든 컬럼을 각각 표준화(standardization) 스케일링 하시기 바랍니다.
+
+모든 전처리 규칙은 트레이닝셋으로 부터 선정한다.
+스케일링한 x들은 각각 아래의 변수에 따로 선언해둔다.
+x_train_sc
+x_valid_sc
+x_test_sc
+from sklearn.preprocessing import StandardScaler
+
+ 
+
+scaler = StandardScaler()
+
+x_train_sc = scaler.fit_transform(x_train)
+
+x_valid_sc = scaler.transform(x_valid)
+
+x_test_sc = scaler.transform(x_test)
+
+x_train_sc
+
+Q8. KNN 모델들을 학습시키시기 바랍니다
+
+트레이닝 셋 (x_train_sc, y_train)을 이용하여 학습시킨다.
+KNN의 이웃수(k)를 2부터 15까지 늘려가며 총 14개의 모델을 학습시킨다.
+학습시킨 트리들은 리스트를 만들어 knns 변수에 담아둔다.
+y를 예측할 경우, 이웃들의 거리값은 반영하지 않는다.(weights 파라미터는 uniform을 사용한다.)
+각 모델을 knns 라는 list에 순차적으로 저장하시기 바랍니다.
+from sklearn.neighbors import KNeighborsClassifier
+
+knns = []
+
+for k in range(2, 16) :
+
+    knn = KNeighborsClassifier(n_neighbors=k, weights='uniform')
+
+    knn.fit(x_train_sc, y_train)
+
+    knns.append(knn)
+
+Q9. KNN 모델들의 성능을 리스트에 담아 accs에 선언하시기 바랍니다
+
+k가 2인 knn모델부터 순서대로 평가하여 리스트에 담는다.
+벨리데이션 셋 위에서 성능을 평가한다. (x는 스케일링 된 값이어야 한다.)
+성능지표로는 accuracy를 사용한다
+accs = []
+
+for k in range(2, 16) :
+
+    idx = k - 2
+
+    knn = knns[idx]
+
+    acc = knn.score(x_valid_sc, y_valid)
+
+    accs.append(acc)
+
+Q10. KNN모델들의 k(이웃수)에 따른 accuracy를 시각화 하고, 가장 성능이 좋은 k 값을 선택하시기 바랍니다.
+
+위의 Q9에서 제작한 리스트 accs를 이용한다.
+line plot 이나 scatter plot을 이용한다.
+동일 성능의 k가 여러개라면, 가장 작은 k를 선택한다.
+plt.figure(figsize=(10, 6))
+
+plt.plot(range(2,16), accs)
+
+plt.grid()
+
+plt.show()
+
+best_knn = knns[4]
+
+print('k = 5 선택')
+
+Q11. 선택된 KNN모델의 테스트셋 위에서의 accuracy를 출력하시기 바랍니다.
+
+best_knn = knns[4]
+
+print(f"테스트셋 위에서의 accuracy : {best_knn.score(x_test_sc, y_test)*100:.2f}%")
+
+Q12. 해당 모델의 classificaiton report를 출력하고, malignant의 precision 값을 출력하시오
+
+테스트셋 위의 성능 평가를 바탕으로 문제를 푼다.
+성능 확인 시 입력데이터는 스케일링 된 데이터인 x_test_sc를 사용해야 한다..
+y_pred = best_knn.predict(x_test_sc)
+
+from sklearn.metrics import classification_report
+
+print(classification_report(y_test, y_pred, target_names=target_names))
+
+print("malignant의 precision이 100% 이기 때문에 암환자라고 예측된 사람은 전부 암환자 일 것이다.")
+
+Q13. Q8에서 Q11 까지의 학습 과정을 scaling 되지 않은 원본데이터로 학습하여 별도의 모델을 만드시기 바랍니다
+
+해당 모델의 classificaiton report를 출력하고, malignant의 precision 값을 출력하시오
+테스트셋 위의 성능 평가를 바탕으로 문제를 푼다.
+성능 확인 시 입력데이터는 스케일링 하지 않은 데이터인 x_valid를 사용해야 한다.
+from sklearn.neighbors import KNeighborsClassifier
+
+ 
+
+knns2 = []
+
+for k in range(2, 16) :
+
+    knn = KNeighborsClassifier(n_neighbors=k, weights='uniform')
+
+    knn.fit(x_train, y_train)
+
+    knns2.append(knn)
+
+ 
+
+    accs2 = []
+
+for k in range(2, 16) :
+
+    idx = k - 2
+
+    knn = knns2[idx]
+
+    acc = knn.score(x_valid, y_valid)
+
+    accs2.append(acc)
+
+   
+
+plt.figure(figsize=(10, 6))
+
+plt.plot(range(2,16), accs2)
+
+plt.grid()
+
+plt.show()
+
+best_knn2 = knns2[4]
+
+Q14. 스케일링하지 않은 데이터의 예측 모델 성능과, 스케일링한 데이터의 예측모델 성능을 출력하여 비교하시기 바랍니다.
+
+기존 만든 best_knn 모델의 score를 사용하여 성능을 출력할 것
+스케일링한 학습 모델은 데이터 : x_test_sc 활용
+스케일링하지 않은 모델은 데이터 x_test 활용
+print(f"Q11 accuracy : {best_knn.score(x_test_sc, y_test)*100:.2f}%")
+
+print(f"Q15 accuracy : {best_knn2.score(x_test, y_test)*100:.2f}%")
+
+ 
+
+다음 문항을 풀기 전에 아래 코드를 실행하세요.
+
+import tensorflow as tf
+
+from tensorflow import keras
+
+from tensorflow.keras.layers import Input, Dense, Dropout, BatchNormalization
+
+from tensorflow.keras.models import Sequential, Model
+
+from tensorflow.keras.callbacks import EarlyStopping
+
+ 
+
+x_train.shape, x_train.shape[1:]
+
+ 
+
+Q16. 아래 조건에 맞추어 뉴럴네트워크 모델을 학습시키시기 바랍니다
+
+Tensorflow framework를 사용한다.
+히든레이어는 아래와 같은 규칙에 맞추어 구성합니다.
+3개 이상의 fully connected layer를 사용할 것
+Drop out과 batchnormalization을 각각 한번 이상 사용한다.
+Early stopping을 이용하여, validation loss가 10번 이상 개선되지 않으면 학습을 중단 시키고, 가장 성능이 좋았을 때의 가중치를 복구한다.
+학습과정의 로그(loss, accuracy)를 history에 선언하여 남긴다.
+y를 별도로 원핫인코딩 하지 않고 분류모델을 학습시킬 수 있도록 한다.
+0,1로 구분된 binary 분류모델에 맞는 loss function인 binary_crossentropy를 사용하도록 한다.
+epochs는 2000번을 지정한다.
+keras.backend.clear_session()
+
+ 
+
+model = Sequential()
+
+model.add(Dense(64, activation='swish', input_shape=x_train.shape[1:]))
+
+model.add(BatchNormalization())
+
+model.add(Dropout(0.4))
+
+model.add(Dense(32, activation='swish'))
+
+model.add(BatchNormalization())
+
+model.add(Dropout(0.4))
+
+model.add(Dense(32, activation='swish'))
+
+model.add(BatchNormalization())
+
+model.add(Dropout(0.4))
+
+model.add(Dense(1, activation='sigmoid'))
+
+ 
+
+model.compile(optimizer='adam',
+
+              loss='binary_crossentropy',
+
+              metrics=['accuracy'])
+
+ 
+
+es = EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=1, restore_best_weights=True)
+
+history = model.fit(x_train, y_train, epochs=2000, batch_size=32,
+
+                    verbose=1,validation_data=(x_valid, y_valid),callbacks=[es])
+
+Q17. 다음 조건에 맞추어 뉴럴네트워크의 학습 로그를 시각화 하시오
+
+필요한 라이브러리가 있다면 따로 불러온다.
+epochs에 따른 accuracy의 변화를 시각화 한다.
+train accuracy와 validation accuracy를 전부 시각화하고, 구별가능해야 한다.
+그래프의 타이틀은 'Accuracy'로 표시한다.
+x축에는 'epochs'라고 표시하고 y축에는 'accuracy'라고 표시한다.
+위에서 학습한 머신러닝 모델과 성능을 비교해보시오.
+import matplotlib.pyplot as plt
+
+ 
+
+plt.plot(history.history['accuracy'])
+
+plt.plot(history.history['val_accuracy'])
+
+plt.title('Accuracy')
+
+plt.xlabel('epochs')
+
+plt.ylabel('accuracy')
+
+plt.legend(['train_acc', 'val_acc'])
+
+plt.show()
+
+
+
+
+    </pre>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
